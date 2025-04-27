@@ -1,0 +1,322 @@
+<!--POM=PROJECT OBJECT MODEL-->
+<!--.xml=extensible markup language=XML is still used when structure, extensibility, and compatibility matter more than simplicity-->
+
+<!--Because a Flink project usually needs extra libraries to work properly.
+that's why it use Instead of manually downloading all .jar files,
+you just declare them inside pom.xml, and Maven downloads everything for you!-->
+<!--xmlns=xml namespace -->
+
+<!--All the tags inside <project> follow Maven's official rules (POM 4.0.0 standard)."-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        <!--this create another namespace xsi-->
+        <!--which tells that xml have schema which forced to follow set of rules while writing in xml -->
+       
+        <!-- If XML is like writing a paragraph ,
+        then a schema is like setting grammar rules -->
+
+        <!-- 2nd line:This tells XML tools two things:
+            What XML namespace you're using
+            → http://maven.apache.org/POM/4.0.0
+            Where to find the rules (schema) for that namespace
+            → http://maven.apache.org/xsd/maven-4.0.0.xsd
+            I'm writing this document using the Maven 4.0.0 style. 
+            If you're not sure how to read it, go to this web page to see the full 
+            rulebook.”-->
+
+    <!--This specifies the version of the Maven POM (Project Object Model) schema being used -->
+    <modelVersion>4.0.0</modelVersion>
+    
+
+
+
+
+
+<!--1ST INFO -->
+<!--TELLS THE MAVEN WHO YOU ARE AND WHAT PROJECT IS -->
+
+<!--groupId identifies the organization or group that is responsible for the project or library.-->
+<!--here amazon is responsible:-->
+<!--It's like a label that tells Maven, "This tool comes from AWS."-->
+<groupId>com.amazonaws</groupId>
+<!--artifactId is the name of the library or project you want to use.
+It identifies the specific tool, module, or package inside the group (organization).-->
+<artifactId>ad-flink-streaming</artifactId>
+<!--ad-flink-streaming-"Anomaly Detection using Flink Streaming-->
+<version>1.0.0</version>
+<!--"Go to Amazon's tool store"
+artifactId	ad-flink-streaming	"Pick the Flink streaming tool from the shelf"
+version	1.0.0	"Pick version 1.0.0 of that tool"-->
+
+<!--project properties-->
+<properties>
+    <!--tells the maven which format we are going to use while buidling the 
+    this project ,we use UTF-8 format so that jo bhi special
+    character ata hai toh uspe agar app run krke toh faate nhi(Avoids weird character issues in your app)-->
+    <!--It tells Maven:"When you build this project, make sure the source code files are saved and read in UTF-8 encoding."-->
+    <!--project.build.sourceEncoding:-Tell Maven which text format to use when building-->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!--It tells Maven:"When you build the project, put all the output files (like .class files, .jar files) inside the target/ folder."-->
+    <!--${project.basedir}	The root folder where your project starts
+        /target:A folder where Maven saves built output
+        Purpose	Organize files cleanly, separate code vs build artifacts-->
+    <buildDirectory>${project.basedir}/target_naam_ke_under_sara_output_hai</buidDirectory>
+    <!--It tells Maven:When you create a ZIP file (or JAR or package), use this name for the 
+    final file:➔ project name + project version."-->
+    <zip.finalName>${project.name}-${project.version}</zip.finalName>
+    <!--It tells Maven:"When you build (package) the project,
+        name the final JAR file as pyflink-dependencies.jar."-->
+    <jar.finalName>pyflink-dependencies</jar.finalName>
+
+    <flink.version>1.19.0</flink.version>
+    <!--AWS connectors are special libraries.They help Flink applications connect to AWS services like:
+        Kinesis (data streams),DynamoDB (database),S3 (storage),Redshift, etc.
+        So when you are writing a Flink job and you want it to read from or write to AWS services 
+        — you use these AWS connectors.-->
+    <aws.connector.version>4.3.0-1.19</aws.connector.version>
+    <!--It says:"The version of KDA runtime (Kinesis Data Analytics runtime) we want to use is 1.2.0."-->
+    <!--It’s a managed service by AWS that lets you run Apache Flink applications easily on the cloud.-->
+    <kda.runtime.version>1.2.0</kda.runtime.version>
+</properties>
+
+
+
+
+
+
+
+<!--2nd info-->
+<!--listing all the libraries our project need-->
+
+<dependencies>
+    <dependency>
+    <!--<groupId>:-The group name (organization) of the library — here it's org.apache.flink.
+        <artifactId>:-The library you want — here it’s flink-connector-kinesis.
+        <version>:-The version you want — pulling from your <aws.connector.version> property.-->
+    <!--${aws.connector.version} is picked from what you defined earlier in <properties>.
+        If you mismatched tags, Maven won't understand what library you are asking for.-->
+        <groupId>org.apache.flink</groupId>
+        <artifactId>flink-connector-kinesis</artifactId>
+        <version>${aws.connector.version}</version>
+    </dependency>
+</dependencies>
+
+
+
+
+<!--3rd info-->
+<!--custom build instructions like java versions ,plugins etc.-->
+
+<build>
+    <!--where the ouput is targeted uski directory jo ki 
+        properties pe already marked hai-->
+    <directory>${buildDirectory}</directory>
+
+    <!--here 3 plugins are added in pom.xml-->
+
+    <plugins>
+        <!--You are starting to configure a tool (a plugin) that helps Maven do extra work.--> 
+        <plugin>
+            <!--here we are using an official Maven plugin made by the Apache Maven team.-->
+            <groupId>org.apache.maven.plugins</groupId>
+            <!--Maven Shade Plugin:-Tool that puts your code + libraries into one jar, ready for production!
+            It is also callled as "fat-jar" or "uber-jar"-->
+            <artifactId>maven-shade-plugin</artifactId>
+            <!--You are telling Maven to use version 3.2.1 of the Maven Shade Plugin.-->
+            <version>3.2.1</version>
+
+            <!--It means:"It will now tell Maven how and when to run this plugin."-->
+            <executions>
+                <!--Run shade goal on package phase-->
+                <execution>
+                    <!--package phase means:"When Maven is building the project and creating the .jar file, also run the Shade Plugin."-->
+                    <phase>package</phase>  <!-- When: during 'package' step -->
+
+                    <!--tells Maven: "Use the Shade Plugin to create a fat jar with all my project’s code + libraries!"-->
+                    <goals>
+                        <goal>shade</goal>  <!--What: run the 'shade' goal -->
+                    </goals>
+
+                   <!-- <configuration> is where you tell Maven what special settings you want for a plugin.-->
+                    <configuration>
+
+                    <!--This configuration prevents the plugin from generating the "original" jar file -->
+
+                    <!--"Please put the files into the main build folder where compiled stuff goes."
+                        ${project.build.outputDirectory} is just a shortcut (a Maven variable) for the default folder
+                         where Maven puts compiled classes. Normally, that folder is target/classes.-->
+                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+
+                    <!--artifactId:-A name of one specific project or dependency.-> "This is the name of a single thing I'm building or using."
+                        artifactSet:-A group of artifacts (maybe many) that you select.->"These are multiple things (jars/files) I want to include or work with."
+                        Example: Include only certain JARs in an assembly.-->
+                    <artifactSet>
+                        <!--These are the things I want to leave out (remove)-->
+                        <excludes>
+                            <!--Do NOT include the force-shading artifact from org.apache.flink.-->
+                            <!--why we are ignoring the artifact name i.e force-shadding because
+                                it is like of helper library which can cause conflict if included accidently-->     
+                            <exclude>org.apache.flink:force-shading</exclude>
+                            <!--Do NOT include the jsr305 library from com.google.code.findbugs-->
+                            <!--I don't need this optional helper library in my final app.-->
+                            <!--jsr305 is a small library that provides annotations like @Nullable, @NonNull, etc. — it's mostly for static analysis, not really needed at runtime.-->
+                            <exclude>com.google.code.findbugs:jsr305</exclude>
+                            <!--Do NOT include any libraries from org.slf4j.-->
+                            <!--org.slf4j = the groupId (the namespace or organization)
+                                * = the wildcard, meaning all libraries in that group.-->
+                            <!--why i am ignoring:because:You might want to control which version of SLF4J is used, so you don’t get conflicts.-->
+                            <!--slf4j:-Simple Logging Facade for Java.-->
+                            <exclude>org.slf4j:*</exclude>
+                            <!--Do NOT include any libraries from log4j -->
+                            <!--You may already be using a different logging framework (like SLF4J or Logback) and don't want to include Log4j.
+                                Prevent conflicts between different logging frameworks.-->
+                            <exclude>log4j:*</exclude>
+                        </excludes>
+                    </artifactSet>
+
+                    <!--<filters> tag in Maven is used for allowing the allows you to 
+                    define which properties or values in your resources should be replaced (or filtered)
+                     during the build process.-->
+                     <!--List of files that contain values to replace during the build process.-->
+                    <filters>
+                        <filter>
+                            <!--I am applying the filter technique to apply this rule to all dependencies-->
+                            <!--* (before and after the colon) is a wildcard.
+                                The first * means any group (like com.example, org.apache, etc.).
+                                The second * means any artifact (like my-library, another-library, etc.).
+                                When you use *: *, it essentially says "match everything".-->
+                            <artifact>*:*</artifact>
+                            <excludes>
+
+                                <!--META-INF/ = Special folder inside a JAR file that holds metadata, certificates, and signature files.-->
+
+                                <!--Exclude all .SF files in the META-INF directory."-->
+                                <!--why i am excluding:-
+                                    beczuse of Security risk: If you include these .SF (signature) files from external dependencies, it could cause
+                                     SecurityExceptions when running the JAR, as they may contain signatures that conflict with the signing of your own JAR.-->
+                                <exclude>Meta-INF/*.SF</exclude>
+                                <!--Exclude all .DSA files in the META-INF directory."-->
+                                 <!-- *.DSA = Files ending with .DSA, which are digital signature files.
+                                    Exclude them = Prevent possible security problems when running your final app.-->   
+                                <exclude>META-INF/*.DSA</exclude>
+                                <!--Exclude all .RSA files in the Meta-INF directory"-->
+                                <!--*.RSA = Files ending with .RSA, which are digital signatures based on the RSA encryption algorithm.-->
+                                <!--why i am excluding:-
+                                    When you bundle many dependencies into one JAR (like with Maven Shade or Assembly), including old .RSA files from
+                                     different libraries can break your app with SecurityException.-->
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                        
+                    <!--Without Filters and Transformers:->All files from dependencies are copied as-is.
+                                                        :->Risk of SecurityException due to old .SF or .RSA files.
+                    	With Filters and Transformers:-> You can remove signature files (using filters) and modify the manifest or merge services (using transformers).
+                                                     :->No unnecessary signatures, correct Main-Class, merged service files.-->
+                        
+                        <!--<transformers> tell Maven how to merge or modify files while making your final JAR.-->
+                        <transformers>
+                            <!--ServicesResourceTransformer merges all META-INF/services/* files from different libraries into one single combined file inside your final JAR.-->
+
+                            <transformer 
+                                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            <!--It modifies or creates the META-INF/MANIFEST.MF file inside your final JAR.
+                                Mainly used to set the Main-Class, so that you can run your JAR like this:-->
+                            <transformer
+                                    implementation="org.apache.maven.plugins.shade.resouce.ManifestResourceTransformer">
+                            </transformer>
+                        </transformers>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+
+
+        <!--4th info :-Plugins:-extra tools like JAR packaging,code formating and testing etc-->
+
+        <plugin>
+            <!--The Maven Assembly Plugin is used for building distribution packages of your project.-->
+            <!--It allows you to bundle your project (along with dependencies) into formats like:
+                JAR (with all dependencies)
+                ZIP
+                TAR
+                And others.-->
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.3.0</version>
+            <configuration>
+                <!--A descriptor is an XML file that defines the layout and contents of the distribution package. 
+                    The file can control things like:
+                        ->The format of the output package (JAR, ZIP, TAR, etc.).
+                        ->Which files are included or excluded.
+                        ->How the files are structured inside the final package.-->
+                <descriptors>
+                    <!--This specifies the location of a custom assembly descriptor file."-->
+                    <!-- here <descriptor> in the pom.xml tells Maven to use the assembly/custom-assembly.xml file.-->
+                    <descriptor>assembly/assembly/xml</descriptor>
+                </descriptors>
+
+                <!--<fileName>${zip.finalName}</fileName> dynamically assigns the final name of the ZIP file based on the 
+                    finalName configured in the pom.xml.
+                    :This allows for flexible naming of output files without hardcoding the names, making it easier to maintain 
+                    across different builds and environments.-->
+                <fileName>${zip.finalName}</finalName>
+                <outputDirectory>${buildDirectory}</outputDirectory>
+                <!--1)<appendAssemblyId>false</appendAssemblyId> disables the default behavior of appending the assembly ID to the final output file name.
+                    2)Useful when you want a cleaner, simpler file name without the extra assembly ID suffix.
+                    3)If you set this to true (or omit it, as true is the default), the assembly ID will be appended to the file name.-->
+                <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+
+            <executions>
+                <execution>
+                    <!--<id> is a unique identifier for an execution configuration within a Maven plugin.-->
+                    <!--make-assembly:This is simply the value given to the id element. In this case, it is 
+                        named "make-assembly" to describe the action being executed, which is creating an assembly-->    
+                    <id>make-assembly</id>
+                    <!--If you're using the Maven Assembly Plugin with <phase>package</phase>, 
+                        it will generate a .zip or .tar file after the project has been compiled. -->
+                    <phase>package</phase>
+                    <!--When you define the goal as single, 
+                        it packages your project (or a specific set of files) into one output file, 
+                        like a ZIP archive.-->
+                    <goals>
+                        <goal>single</goal>
+                        </goals>
+                </execution>
+            <executions>
+        </plugin>
+
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.2.0</version>
+            <configuration>
+                <!--you're telling the plugin to use the final name of the JAR file (defined in the Maven build process)
+                as the name for the generated output.-->
+                <!--For example, if your project’s artifactId is my-project and its version is 1.0.0, 
+                then ${jar.finalName} will resolve to my-project-1.0.0.-->
+                <fileName>${jar.finalName}</finalName>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+</project>
+
+
+
+
+
+    
+
+
+
+                    
+
+
+
+        
+
+
+     
+  
