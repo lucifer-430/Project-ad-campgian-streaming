@@ -61,7 +61,7 @@ version	1.0.0	"Pick version 1.0.0 of that tool"-->
     <!--${project.basedir}	The root folder where your project starts
         /target:A folder where Maven saves built output
         Purpose	Organize files cleanly, separate code vs build artifacts-->
-    <buildDirectory>${project.basedir}/target_naam_ke_under_sara_output_hai</buidDirectory>
+    <buildDirectory>${project.basedir}/target-folder(output)</buildDirectory>
     <!--It tells Maven:When you create a ZIP file (or JAR or package), use this name for the 
     final file:➔ project name + project version."-->
     <zip.finalName>${project.name}-${project.version}</zip.finalName>
@@ -195,7 +195,7 @@ version	1.0.0	"Pick version 1.0.0 of that tool"-->
                                 <!--why i am excluding:-
                                     beczuse of Security risk: If you include these .SF (signature) files from external dependencies, it could cause
                                      SecurityExceptions when running the JAR, as they may contain signatures that conflict with the signing of your own JAR.-->
-                                <exclude>Meta-INF/*.SF</exclude>
+                                <exclude>META-INF/*.SF</exclude>
                                 <!--Exclude all .DSA files in the META-INF directory."-->
                                  <!-- *.DSA = Files ending with .DSA, which are digital signature files.
                                     Exclude them = Prevent possible security problems when running your final app.-->   
@@ -207,7 +207,8 @@ version	1.0.0	"Pick version 1.0.0 of that tool"-->
                                      different libraries can break your app with SecurityException.-->
                                 <exclude>META-INF/*.RSA</exclude>
                             </excludes>
-                        </filter>
+                            </filter>
+                        </filters>
                         
                     <!--Without Filters and Transformers:->All files from dependencies are copied as-is.
                                                         :->Risk of SecurityException due to old .SF or .RSA files.
@@ -223,7 +224,7 @@ version	1.0.0	"Pick version 1.0.0 of that tool"-->
                             <!--It modifies or creates the META-INF/MANIFEST.MF file inside your final JAR.
                                 Mainly used to set the Main-Class, so that you can run your JAR like this:-->
                             <transformer
-                                    implementation="org.apache.maven.plugins.shade.resouce.ManifestResourceTransformer">
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                             </transformer>
                         </transformers>
                     </configuration>
@@ -241,6 +242,7 @@ version	1.0.0	"Pick version 1.0.0 of that tool"-->
                 ZIP
                 TAR
                 And others.-->
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
             <version>3.3.0</version>
             <configuration>
@@ -252,14 +254,14 @@ version	1.0.0	"Pick version 1.0.0 of that tool"-->
                 <descriptors>
                     <!--This specifies the location of a custom assembly descriptor file."-->
                     <!-- here <descriptor> in the pom.xml tells Maven to use the assembly/custom-assembly.xml file.-->
-                    <descriptor>assembly/assembly/xml</descriptor>
+                    <descriptor>assembly/assembly.xml</descriptor>
                 </descriptors>
 
                 <!--<fileName>${zip.finalName}</fileName> dynamically assigns the final name of the ZIP file based on the 
                     finalName configured in the pom.xml.
                     :This allows for flexible naming of output files without hardcoding the names, making it easier to maintain 
                     across different builds and environments.-->
-                <fileName>${zip.finalName}</finalName>
+                <finalName>${zip.finalName}</finalName>
                 <outputDirectory>${buildDirectory}</outputDirectory>
                 <!--1)<appendAssemblyId>false</appendAssemblyId> disables the default behavior of appending the assembly ID to the final output file name.
                     2)Useful when you want a cleaner, simpler file name without the extra assembly ID suffix.
@@ -283,7 +285,7 @@ version	1.0.0	"Pick version 1.0.0 of that tool"-->
                         <goal>single</goal>
                         </goals>
                 </execution>
-            <executions>
+            </executions>
         </plugin>
 
 
@@ -296,7 +298,7 @@ version	1.0.0	"Pick version 1.0.0 of that tool"-->
                 as the name for the generated output.-->
                 <!--For example, if your project’s artifactId is my-project and its version is 1.0.0, 
                 then ${jar.finalName} will resolve to my-project-1.0.0.-->
-                <fileName>${jar.finalName}</finalName>
+                <finalName>${jar.finalName}</finalName>
             </configuration>
         </plugin>
     </plugins>
